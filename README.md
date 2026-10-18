@@ -21,14 +21,27 @@ Aplikasi computer vision yang mendeteksi kelengkapan atribut seragam sekolah sec
 
 ## Hasil Evaluasi (Test Set)
 
-| Kelas | Precision | Recall | F1-Score |
-|-------|-----------|--------|----------|
-| Dasi | 0.75 | 0.75 | 0.75 |
-| Logo Sekolah | 0.90 | 0.82 | 0.86 |
-| Topi | 0.71 | 0.93 | 0.80 |
-| Ikat Pinggang | 0.35 | 0.50 | 0.41 |
-| Background | 0.89 | 0.76 | 0.82 |
-| **mAP** | | | **83.42%** |
+| Kelas | Precision | Recall | F1-Score | AP |
+|-------|-----------|--------|----------|----|
+| Dasi | 0.75 | 0.75 | 0.75 | 81.41% |
+| Logo Sekolah | 0.90 | 0.82 | 0.86 | 90.62% |
+| Topi | 0.71 | 0.93 | 0.80 | 92.23% |
+| Ikat Pinggang | 0.35 | 0.50 | 0.41 | 59.03% |
+| Background | 0.89 | 0.76 | 0.82 | 93.82% |
+| **Macro avg** | **0.72** | **0.75** | **0.73** | — |
+| **Weighted avg** | **0.81** | **0.78** | **0.79** | — |
+| **mAP** | | | | **83.42%** |
+
+**Average Precision (AP) per kelas:**
+- Dasi            : 81.41%
+- Logo Sekolah    : 90.62%
+- Topi            : 92.23%
+- Ikat Pinggang   : 59.03%
+- Background      : 93.82%
+
+**=> mAP (Mean Average Precision) : 83.42%**
+
+> **Catatan:** AP (Average Precision) dihitung dari area di bawah kurva precision-recall di semua threshold confidence, sehingga nilainya bisa lebih tinggi dari F1-score yang dihitung pada satu titik threshold saja. mAP adalah rata-rata AP dari kelima kelas.
 
 ---
 
