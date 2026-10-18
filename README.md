@@ -1,39 +1,63 @@
 # Deteksi Atribut Seragam Sekolah (School Uniform Attribute Detection)
 
-This project is a computer vision application that detects school uniform attributes (Dasi/Tie, Logo Sekolah/School Badge, Topi/Hat, and Ikat Pinggang/Belt) in real-time using a webcam feed. It utilizes Histogram of Oriented Gradients (HOG) features and a Support Vector Machine (SVM) classifier to identify the objects through a sliding window approach.
+Aplikasi computer vision yang mendeteksi kelengkapan atribut seragam sekolah secara real-time menggunakan webcam. Menggunakan HOG (Histogram of Oriented Gradients) sebagai ekstraksi fitur dan SVM (Support Vector Machine) sebagai classifier, dengan pendekatan sliding window.
 
-## Features
-- Detects the following attributes:
-  - Dasi (Tie)
-  - Logo Sekolah (School Badge)
-  - Topi (Hat)
-  - Ikat Pinggang (Belt)
-- Real-time webcam integration.
-- Facial region exclusion to reduce false positives (using OpenCV Haar Cascades).
-- Custom Non-Maximum Suppression (NMS) for refining overlapping bounding boxes.
+## Atribut yang Dideteksi
+- **Dasi** (Tie)
+- **Logo Sekolah** (School Badge)
+- **Topi** (Hat)
+- **Ikat Pinggang** (Belt)
 
-## How It Works
-1. **Feature extraction** — each object crop is resized to 96x96 and turned into a HOG (Histogram of Oriented Gradients) feature vector, which captures shape/edge patterns.
-2. **Training** — an SVM classifier (linear kernel) is trained on these HOG features, using both the annotated objects and randomly sampled background patches as negative examples. Simple data augmentation (rotation, blur, noise) is applied to boost training data.
-3. **Detection** — the webcam frame is scanned with a sliding window; each window is classified by the SVM, filtered by a confidence threshold and a face-exclusion check, then cleaned up with Non-Maximum Suppression (NMS) before being drawn on screen.
+---
+
+## Cara Kerja
+
+1. **Preprocessing** — setiap crop objek di-resize ke 96×96, lalu dinormalisasi pencahayaan dengan CLAHE sebelum diekstrak fitur HOG-nya.
+2. **Training** — SVM kernel linear ditraining dengan fitur HOG dari crop objek + background patch (grid-based sampling). Data augmentasi 6 jenis diterapkan 5× per crop untuk memperkaya variasi data. Hard Negative Mining dijalankan sebagai pass kedua untuk mengurangi false positive.
+3. **Hyperparameter Tuning** — nilai `C` terbaik dipilih berdasarkan macro F1-score di folder `valid/` (bukan `test/`) agar evaluasi final tetap jujur.
+4. **Deteksi** — frame webcam di-resize ke resolusi 320×240 lalu di-scan dengan sliding window 96×96 (step 64); tiap window diklasifikasi SVM, difilter confidence threshold dan zona vertikal, lalu dibersihkan dengan NMS (threshold 0.3) sebelum ditampilkan.
+
+---
+
+## Hasil Evaluasi (Test Set)
+
+| Kelas | Precision | Recall | F1-Score |
+|-------|-----------|--------|----------|
+| Dasi | 0.75 | 0.75 | 0.75 |
+| Logo Sekolah | 0.90 | 0.82 | 0.86 |
+| Topi | 0.71 | 0.93 | 0.80 |
+| Ikat Pinggang | 0.35 | 0.50 | 0.41 |
+| Background | 0.89 | 0.76 | 0.82 |
+| **mAP** | | | **83.42%** |
+
+---
 
 ## Requirements
-- Python 3.9–3.11 (recommended)
-- A working webcam
-- Packages:
-  - opencv-python
-  - opencv-contrib-python (for `cv2.dnn.NMSBoxes`, if not already in opencv-python on your platform)
-  - numpy
-  - scikit-image
-  - scikit-learn
+
+- Python 3.9–3.11
+- Webcam
+- Jupyter Notebook / JupyterLab / VS Code dengan ekstensi Jupyter
+- Package:
+  ```
+  opencv-python
+  opencv-contrib-python
+  numpy
+  scikit-image
+  scikit-learn
+  matplotlib
+  ```
+
+---
 
 ## Installation
-1. Clone this repository:
+
+1. Clone repository:
    ```bash
    git clone <repo-url>
    cd <repo-folder>
    ```
-2. (Recommended) Create and activate a virtual environment:
+
+2. Buat dan aktifkan virtual environment:
    ```bash
    python -m venv venv
    # Windows
@@ -41,151 +65,101 @@ This project is a computer vision application that detects school uniform attrib
    # macOS/Linux
    source venv/bin/activate
    ```
+
 3. Install dependencies:
    ```bash
-   pip install opencv-python opencv-contrib-python numpy scikit-image scikit-learn
+   pip install opencv-python opencv-contrib-python numpy scikit-image scikit-learn matplotlib
    ```
 
+---
+
 ## Dataset
-This project uses the **Deteksi Seragam** dataset from Roboflow. The dataset contains images of students with bounding box annotations for the uniform attributes.
+
+Menggunakan dataset **Deteksi Seragam** dari Roboflow dalam format Pascal VOC XML.
 
 **Dataset Link:** [Deteksi Seragam Dataset on Roboflow](https://universe.roboflow.com/skripsi-gztjx/deteksi-seragam/dataset/1)
 
-### How to Download the Dataset in Pascal VOC XML Format
-To run the training script successfully, you need the dataset annotated in **Pascal VOC XML** format. Follow these steps:
+### Cara Download
 
-1. Click on the Dataset Link above. Create a free account or log in to Roboflow if you haven't already.
-2. Navigate to the **Dataset** tab of the project.
-3. Click on the **Download Dataset** button located in the top right area of the page.
-4. In the "Format" dropdown menu, select **Pascal VOC**.
-5. Select the **Download zip to computer** option (or obtain the download code if you prefer to download it directly via CLI/script).
-6. Once the zip file is downloaded, extract it.
-7. You should see `train`, `valid`, and `test` folders containing both the `.jpg` images and the `.xml` annotations.
-8. Move the `train` and `test` folders directly into the root directory of this project.
-   > Note: the current training/evaluation script (`main.py`) only reads from `train/` (for training) and `test/` (for evaluation). The `valid/` folder from the Roboflow export is not used by the script yet — you can leave it out, or keep it for future use (e.g. hyperparameter tuning).
+1. Buka link dataset di atas, login/daftar Roboflow
+2. Klik **Download Dataset** → pilih format **Pascal VOC**
+3. Extract zip yang didownload
+4. Pindahkan folder `train/`, `valid/`, dan `test/` ke root folder projek ini
+
+### Struktur Dataset
+
+| Folder | Jumlah Gambar | Keterangan |
+|--------|--------------|------------|
+| `train/` | 495 gambar | Untuk training model |
+| `valid/` | 50 gambar | Untuk hyperparameter tuning |
+| `test/` | 20 gambar | Untuk evaluasi final |
+
+Semua gambar berukuran 640×640px, format JPG, annotasi Pascal VOC XML.
+
+---
 
 ## Project Structure
+
 ```
 .
-├── main.py                    # Main script: trains (or loads) the model, evaluates it, then runs live detection
-├── svm_seragam_model.pkl      # Trained SVM model (auto-generated on first run, git-ignored)
-├── train/                     # Training images + Pascal VOC XML annotations (from Roboflow, git-ignored)
-├── test/                      # Test images + Pascal VOC XML annotations (from Roboflow, git-ignored)
-├── valid/                     # Validation images + annotations from Roboflow (git-ignored, not yet used by main.py)
+├── main.ipynb                 # Notebook utama: training, evaluasi, dan deteksi webcam
+├── svm_seragam_model.pkl      # Model SVM tersimpan (auto-generated, git-ignored)
+├── confusion_matrix.png       # Confusion matrix hasil evaluasi (auto-generated)
+├── evaluation_results.json    # Hasil evaluasi dalam format JSON (auto-generated)
+├── train/                     # Dataset training (git-ignored)
+├── valid/                     # Dataset validasi (git-ignored)
+├── test/                      # Dataset test (git-ignored)
 ├── .gitignore
 └── README.md
 ```
 
-## Usage
-Run the main script:
-```bash
-python main.py
-```
+---
 
-What happens when you run it:
-- **First run:** since `svm_seragam_model.pkl` doesn't exist yet, the script will train a new SVM model from the images in `train/`. This can take around **5–10 minutes** depending on your machine and dataset size. The trained model is then saved to `svm_seragam_model.pkl` so future runs skip training.
-- **Every run:** the script evaluates the model against `test/` and prints a classification report (accuracy, precision/recall, mAP) to the terminal.
-- **Then:** your webcam activates and live detection starts. A checklist overlay shows which uniform attributes (Dasi, Logo Sekolah, Ikat Pinggang, Topi) are currently detected.
-- Press **`q`** to quit the application.
+## Struktur Notebook (main.ipynb)
 
-> Make sure to allow camera access when prompted by your OS.
+| Cell | Isi |
+|------|-----|
+| 1 | Import Library |
+| 2 | Konfigurasi Global |
+| 3 | Preprocessing & Feature Extraction (CLAHE + HOG) |
+| 4 | Augmentasi Data (6 jenis, 5× per crop) |
+| 5 | Dataset Loader (Grid-based Background Sampling) |
+| 6 | Training + Hyperparameter Tuning via `valid/` |
+| 7 | Hard Negative Mining (2-pass training) |
+| 8 | Evaluasi Model pada Test Set |
+| 9 | Fungsi Deteksi (Sliding Window + NMS) |
+| 10 | Real-time Webcam Detection |
 
-## Notes & Limitations
-- To retrain from scratch, delete `svm_seragam_model.pkl` and run the script again.
-- Detection accuracy depends heavily on the dataset size/quality and lighting conditions during webcam use.
-- The sliding-window + SVM approach is relatively lightweight but slower than modern deep-learning detectors (e.g. YOLO); frame processing is throttled (`process_every_n_frames`) to keep the webcam feed responsive.# Deteksi Atribut Seragam Sekolah (School Uniform Attribute Detection)
-
-This project is a computer vision application that detects school uniform attributes (Dasi/Tie, Logo Sekolah/School Badge, Topi/Hat, and Ikat Pinggang/Belt) in real-time using a webcam feed. It utilizes Histogram of Oriented Gradients (HOG) features and a Support Vector Machine (SVM) classifier to identify the objects through a sliding window approach.
-
-## Features
-- Detects the following attributes:
-  - Dasi (Tie)
-  - Logo Sekolah (School Badge)
-  - Topi (Hat)
-  - Ikat Pinggang (Belt)
-- Real-time webcam integration.
-- Facial region exclusion to reduce false positives (using OpenCV Haar Cascades).
-- Custom Non-Maximum Suppression (NMS) for refining overlapping bounding boxes.
-
-## How It Works
-1. **Feature extraction** — each object crop is resized to 96x96 and turned into a HOG (Histogram of Oriented Gradients) feature vector, which captures shape/edge patterns.
-2. **Training** — an SVM classifier (linear kernel) is trained on these HOG features, using both the annotated objects and randomly sampled background patches as negative examples. Simple data augmentation (rotation, blur, noise) is applied to boost training data.
-3. **Detection** — the webcam frame is scanned with a sliding window; each window is classified by the SVM, filtered by a confidence threshold and a face-exclusion check, then cleaned up with Non-Maximum Suppression (NMS) before being drawn on screen.
-
-## Requirements
-- Python 3.9–3.11 (recommended)
-- A working webcam
-- Packages:
-  - opencv-python
-  - opencv-contrib-python (for `cv2.dnn.NMSBoxes`, if not already in opencv-python on your platform)
-  - numpy
-  - scikit-image
-  - scikit-learn
-
-## Installation
-1. Clone this repository:
-   ```bash
-   git clone <repo-url>
-   cd <repo-folder>
-   ```
-2. (Recommended) Create and activate a virtual environment:
-   ```bash
-   python -m venv venv
-   # Windows
-   venv\Scripts\activate
-   # macOS/Linux
-   source venv/bin/activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install opencv-python opencv-contrib-python numpy scikit-image scikit-learn
-   ```
-
-## Dataset
-This project uses the **Deteksi Seragam** dataset from Roboflow. The dataset contains images of students with bounding box annotations for the uniform attributes.
-
-**Dataset Link:** [Deteksi Seragam Dataset on Roboflow](https://universe.roboflow.com/skripsi-gztjx/deteksi-seragam/dataset/1)
-
-### How to Download the Dataset in Pascal VOC XML Format
-To run the training script successfully, you need the dataset annotated in **Pascal VOC XML** format. Follow these steps:
-
-1. Click on the Dataset Link above. Create a free account or log in to Roboflow if you haven't already.
-2. Navigate to the **Dataset** tab of the project.
-3. Click on the **Download Dataset** button located in the top right area of the page.
-4. In the "Format" dropdown menu, select **Pascal VOC**.
-5. Select the **Download zip to computer** option (or obtain the download code if you prefer to download it directly via CLI/script).
-6. Once the zip file is downloaded, extract it.
-7. You should see `train`, `valid`, and `test` folders containing both the `.jpg` images and the `.xml` annotations.
-8. Move the `train` and `test` folders directly into the root directory of this project.
-   > Note: the current training/evaluation script (`main.py`) only reads from `train/` (for training) and `test/` (for evaluation). The `valid/` folder from the Roboflow export is not used by the script yet — you can leave it out, or keep it for future use (e.g. hyperparameter tuning).
-
-## Project Structure
-```
-.
-├── main.py                    # Main script: trains (or loads) the model, evaluates it, then runs live detection
-├── svm_seragam_model.pkl      # Trained SVM model (auto-generated on first run, git-ignored)
-├── train/                     # Training images + Pascal VOC XML annotations (from Roboflow, git-ignored)
-├── test/                      # Test images + Pascal VOC XML annotations (from Roboflow, git-ignored)
-├── valid/                     # Validation images + annotations from Roboflow (git-ignored, not yet used by main.py)
-├── .gitignore
-└── README.md
-```
+---
 
 ## Usage
-Run the main script:
-```bash
-python main.py
-```
 
-What happens when you run it:
-- **First run:** since `svm_seragam_model.pkl` doesn't exist yet, the script will train a new SVM model from the images in `train/`. This can take around **5–10 minutes** depending on your machine and dataset size. The trained model is then saved to `svm_seragam_model.pkl` so future runs skip training.
-- **Every run:** the script evaluates the model against `test/` and prints a classification report (accuracy, precision/recall, mAP) to the terminal.
-- **Then:** your webcam activates and live detection starts. A checklist overlay shows which uniform attributes (Dasi, Logo Sekolah, Ikat Pinggang, Topi) are currently detected.
-- Press **`q`** to quit the application.
+Buka dan jalankan `main.ipynb` secara berurutan dari cell 1 hingga cell 10.
 
-> Make sure to allow camera access when prompted by your OS.
+### Yang Terjadi Saat Run
+
+- **Cell 1–5** — definisi fungsi dan konfigurasi (< 1 menit)
+- **Cell 6** — training model + hyperparameter tuning (~45–60 menit, hanya jika `.pkl` belum ada)
+- **Cell 7** — Hard Negative Mining + retrain (~15–20 menit, hanya jika training baru)
+- **Cell 8** — evaluasi di `test/`, tampilkan confusion matrix, simpan `evaluation_results.json`
+- **Cell 9** — definisi fungsi deteksi
+- **Cell 10** — webcam aktif, tekan **`q`** untuk keluar
+
+> Jika `svm_seragam_model.pkl` sudah ada, cell 6 dan 7 otomatis di-skip langsung load model.
+
+---
+
+## Tips Penggunaan Webcam
+
+- Jarak optimal dari kamera: **1–1.5 meter**
+- Pastikan pencahayaan cukup (CLAHE membantu tapi tidak bisa mengatasi gelap total)
+- Posisikan tubuh sehingga kepala ada di bagian atas frame untuk deteksi Topi
+
+---
 
 ## Notes & Limitations
-- To retrain from scratch, delete `svm_seragam_model.pkl` and run the script again.
-- Detection accuracy depends heavily on the dataset size/quality and lighting conditions during webcam use.
-- The sliding-window + SVM approach is relatively lightweight but slower than modern deep-learning detectors (e.g. YOLO); frame processing is throttled (`process_every_n_frames`) to keep the webcam feed responsive.
+
+- Untuk retrain dari awal: hapus `svm_seragam_model.pkl` lalu jalankan ulang dari cell 1
+- Target FPS: ~10 FPS (HOG+SVM tidak bisa memanfaatkan GPU)
+- Ikat Pinggang paling sulit dideteksi karena sering tertutup dan datanya paling sedikit
+- Pendekatan HOG+SVM lebih lambat dan kurang akurat dibanding deep learning (YOLO/MobileNet), tapi lebih mudah dijelaskan secara akademis

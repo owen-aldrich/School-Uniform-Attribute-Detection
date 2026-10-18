@@ -1,0 +1,13 @@
+{
+    "timestamp": "2026-10-18 23:31:35",
+    "model_file": "svm_seragam_model.pkl",
+    "accuracy": 78.37,
+    "mAP": 83.42,
+    "per_kelas": {
+        "Dasi": 81.41,
+        "Logo Sekolah": 90.62,
+        "Topi": 92.23,
+        "Ikat Pinggang": 59.03,
+        "Background": 93.82
+    }
+}
