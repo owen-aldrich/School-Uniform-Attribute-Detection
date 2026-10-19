@@ -23,23 +23,23 @@ Aplikasi computer vision yang mendeteksi kelengkapan atribut seragam sekolah sec
 
 | Kelas | Precision | Recall | F1-Score | AP |
 |-------|-----------|--------|----------|----|
-| Dasi | 0.75 | 0.75 | 0.75 | 81.41% |
-| Logo Sekolah | 0.90 | 0.82 | 0.86 | 90.62% |
-| Topi | 0.71 | 0.93 | 0.80 | 92.23% |
-| Ikat Pinggang | 0.35 | 0.50 | 0.41 | 59.03% |
-| Background | 0.89 | 0.76 | 0.82 | 93.82% |
-| **Macro avg** | **0.72** | **0.75** | **0.73** | — |
-| **Weighted avg** | **0.81** | **0.78** | **0.79** | — |
-| **mAP** | | | | **83.42%** |
+| Dasi | 0.72 | 0.75 | 0.73 | 82.63% |
+| Logo Sekolah | 0.83 | 0.86 | 0.84 | 90.09% |
+| Topi | 0.70 | 0.95 | 0.81 | 93.00% |
+| Ikat Pinggang | 0.35 | 0.50 | 0.41 | 58.31% |
+| Background | 0.92 | 0.73 | 0.81 | 94.50% |
+| **Macro avg** | **0.70** | **0.76** | **0.72** | — |
+| **Weighted avg** | **0.81** | **0.78** | **0.78** | — |
+| **mAP** | | | | **83.71%** |
 
 **Average Precision (AP) per kelas:**
-- Dasi            : 81.41%
-- Logo Sekolah    : 90.62%
-- Topi            : 92.23%
-- Ikat Pinggang   : 59.03%
-- Background      : 93.82%
+- Dasi            : 82.63%
+- Logo Sekolah    : 90.09%
+- Topi            : 93.00%
+- Ikat Pinggang   : 58.31%
+- Background      : 94.50%
 
-**=> mAP (Mean Average Precision) : 83.42%**
+**=> mAP (Mean Average Precision) : 83.71%**
 
 > **Catatan:** AP (Average Precision) dihitung dari area di bawah kurva precision-recall di semua threshold confidence, sehingga nilainya bisa lebih tinggi dari F1-score yang dihitung pada satu titik threshold saja. mAP adalah rata-rata AP dari kelima kelas.
 
@@ -59,6 +59,8 @@ Aplikasi computer vision yang mendeteksi kelengkapan atribut seragam sekolah sec
   scikit-learn
   matplotlib
   ```
+
+> Semua package lain yang dipakai (`pickle`, `os`, `random`, `time`, `xml.etree`, `json`, `datetime`) sudah tersedia sebagai bagian dari Python standard library.
 
 ---
 
